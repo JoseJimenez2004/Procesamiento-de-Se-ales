@@ -3,397 +3,463 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Series de Taylor - Visualizador Interactivo</title>
-    <!-- TailwindCSS -->
+    <title>Visualizador de Series de Fourier</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Plotly.js para gráficos interactivos -->
-    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
-    <!-- MathJax para mostrar fórmulas matemáticas -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#3b82f6',
-                        secondary: '#10b981',
-                        accent: '#f59e0b',
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
                         dark: '#1f2937',
+                        light: '#f9fafb'
                     }
                 }
             }
         }
     </script>
     <style>
-        .function-input {
-            font-family: monospace;
+        .function-part {
+            transition: all 0.3s ease;
         }
-        .slider-value {
-            min-width: 40px;
-            text-align: center;
-            background-color: #3b82f6;
-            color: white;
-            border-radius: 10px;
-            padding: 2px 6px;
-            font-size: 0.875rem;
-            margin-left: 10px;
-        }
-        #taylorExpression {
-            min-height: 60px;
-            overflow-x: auto;
-            background-color: #f9fafb;
-            border-radius: 0.5rem;
-            padding: 1rem;
+        .function-part:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen font-sans">
     <div class="container mx-auto px-4 py-8">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-dark mb-2">Visualizador de Series de Taylor</h1>
-            <p class="text-gray-600">Explora cómo las series de Taylor aproximan funciones matemáticas</p>
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-dark mb-2">Visualizador de Series de Fourier</h1>
+            <p class="text-lg text-gray-600">Calcula y visualiza la aproximación de funciones periódicas mediante series trigonométricas de Fourier</p>
         </header>
 
-        <main class="bg-white rounded-xl shadow-md p-6 mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Panel de controles -->
-                <div class="space-y-6">
-                    <div>
-                        <label for="functionInput" class="block text-sm font-medium text-gray-700 mb-1">Función f(x)</label>
-                        <input type="text" id="functionInput" value="sin(x)" 
-                            class="function-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                        <p class="mt-1 text-sm text-gray-500">Ejemplos: sin(x), cos(x), exp(x), log(x), x^2, etc.</p>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="xMin" class="block text-sm font-medium text-gray-700 mb-1">Valor mínimo de x</label>
-                            <input type="number" id="xMin" value="-5" step="0.5" 
-                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                        </div>
-                        <div>
-                            <label for="xMax" class="block text-sm font-medium text-gray-700 mb-1">Valor máximo de x</label>
-                            <input type="number" id="xMax" value="5" step="0.5" 
-                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <label for="nTerms" class="block text-sm font-medium text-gray-700">Número de términos (n)</label>
-                            <span id="nValue" class="slider-value">5</span>
-                        </div>
-                        <input type="range" id="nTerms" min="0" max="60" value="5" 
-                            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Colores de las curvas</label>
-                        <div class="flex space-x-4">
-                            <div class="flex items-center">
-                                <label for="funcColor" class="text-sm mr-2">Función:</label>
-                                <input type="color" id="funcColor" value="#3b82f6" class="w-8 h-8 cursor-pointer">
-                            </div>
-                            <div class="flex items-center">
-                                <label for="taylorColor" class="text-sm mr-2">Taylor:</label>
-                                <input type="color" id="taylorColor" value="#ef4444" class="w-8 h-8 cursor-pointer">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <button id="exportBtn" class="w-full bg-primary hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            Exportar gráfica como imagen
-                        </button>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Panel de configuración -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-dark mb-6">Configuración de la función</h2>
+                
+                <!-- Período -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2">Período (T)</label>
+                    <input type="number" id="period" value="2" min="0.1" step="0.1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                
+                <!-- Selector de tipo de función -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Tipo de función</label>
+                    <div class="flex space-x-4">
+                        <button id="simple-function-btn" class="px-4 py-2 bg-primary text-white rounded-lg transition-colors">Función simple</button>
+                        <button id="piecewise-function-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg transition-colors">Función por partes</button>
                     </div>
                 </div>
-
-                <!-- Panel de visualización -->
-                <div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Aproximación de Taylor</label>
-                        <div id="taylorExpression" class="text-sm font-mono"></div>
+                
+                <!-- Función simple -->
+                <div id="simple-function-container" class="mb-6">
+                    <label class="block text-gray-700 mb-2">Función f(t)</label>
+                    <input type="text" id="function-input" value="t^2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Ej: sin(t), t^2, exp(t)">
+                    <p class="text-sm text-gray-500 mt-1">Usa 't' como variable. Soporta funciones matemáticas comunes: sin, cos, exp, etc.</p>
+                </div>
+                
+                <!-- Función por partes -->
+                <div id="piecewise-function-container" class="hidden mb-6">
+                    <label class="block text-gray-700 mb-2">Definir función por partes</label>
+                    <div id="function-parts" class="space-y-4">
+                        <div class="function-part bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="grid grid-cols-3 gap-4 mb-2">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Desde</label>
+                                    <input type="number" value="0" class="w-full px-2 py-1 border border-gray-300 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Hasta</label>
+                                    <input type="number" value="1" class="w-full px-2 py-1 border border-gray-300 rounded">
+                                </div>
+                                <div class="flex items-end">
+                                    <button class="remove-part px-2 py-1 bg-red-500 text-white rounded text-sm">Eliminar</button>
+                                </div>
+                            </div>
+                            <input type="text" value="t" class="w-full px-2 py-1 border border-gray-300 rounded" placeholder="Función para este intervalo">
+                        </div>
                     </div>
-                    
-                    <div id="plot" class="h-80 w-full border border-gray-200 rounded-lg"></div>
+                    <button id="add-part" class="mt-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition-colors">+ Añadir intervalo</button>
+                </div>
+                
+                <!-- Número de coeficientes -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2">Número de términos (N)</label>
+                    <input type="range" id="n-terms" min="1" max="50" value="10" class="w-full">
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>1</span>
+                        <span id="n-value">10</span>
+                        <span>50</span>
+                    </div>
+                </div>
+                
+                <!-- Botón de calcular -->
+                <button id="calculate-btn" class="w-full bg-primary hover:bg-secondary text-white font-medium py-3 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg">
+                    Calcular Serie de Fourier
+                </button>
+                
+                <!-- Resultados -->
+                <div id="results" class="mt-8 hidden">
+                    <h3 class="text-xl font-semibold text-dark mb-4">Coeficientes calculados</h3>
+                    <div class="bg-gray-50 p-4 rounded-lg overflow-x-auto">
+                        <pre id="coefficients-output" class="text-sm"></pre>
+                    </div>
+                    <div class="mt-4">
+                        <h4 class="text-lg font-medium text-dark mb-2">Serie de Fourier:</h4>
+                        <div id="fourier-series" class="text-gray-700 overflow-x-auto"></div>
+                    </div>
                 </div>
             </div>
-        </main>
-
-        <div class="bg-white rounded-xl shadow-md p-6 text-sm text-gray-600">
-            <h2 class="font-medium text-dark mb-2">Instrucciones de uso:</h2>
-            <ul class="list-disc pl-5 space-y-1">
-                <li>Escribe una función matemática válida en JavaScript (usa 'x' como variable)</li>
-                <li>Ajusta el rango de valores de x con los campos mínimo y máximo</li>
-                <li>Selecciona el número de términos de la serie con el deslizador</li>
-                <li>Observa cómo la aproximación de Taylor se acerca a la función real al aumentar n</li>
-                <li>Personaliza los colores de las curvas y exporta la gráfica si lo deseas</li>
-            </ul>
+            
+            <!-- Panel de visualización -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-dark mb-6">Visualización</h2>
+                <div class="h-80">
+                    <canvas id="function-chart"></canvas>
+                </div>
+                <div class="mt-6 flex justify-center">
+                    <div class="w-3/4">
+                        <label class="block text-gray-700 mb-2 text-center">Términos de la serie: <span id="slider-value">10</span></label>
+                        <input type="range" id="series-terms" min="1" max="50" value="10" class="w-full">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         // Variables globales
-        let plot;
-        let functionColor = '#3b82f6';
-        let taylorColor = '#ef4444';
-
+        let chart = null;
+        let fourierSeries = null;
+        let originalFunction = null;
+        let period = 2;
+        
+        // Elementos DOM
+        const simpleFunctionBtn = document.getElementById('simple-function-btn');
+        const piecewiseFunctionBtn = document.getElementById('piecewise-function-btn');
+        const simpleFunctionContainer = document.getElementById('simple-function-container');
+        const piecewiseFunctionContainer = document.getElementById('piecewise-function-container');
+        const calculateBtn = document.getElementById('calculate-btn');
+        const nTermsInput = document.getElementById('n-terms');
+        const nValueDisplay = document.getElementById('n-value');
+        const resultsContainer = document.getElementById('results');
+        const coefficientsOutput = document.getElementById('coefficients-output');
+        const fourierSeriesDisplay = document.getElementById('fourier-series');
+        const seriesTermsInput = document.getElementById('series-terms');
+        const sliderValueDisplay = document.getElementById('slider-value');
+        const periodInput = document.getElementById('period');
+        const functionPartsContainer = document.getElementById('function-parts');
+        const addPartBtn = document.getElementById('add-part');
+        
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
-            // Configurar event listeners
-            document.getElementById('functionInput').addEventListener('input', updatePlot);
-            document.getElementById('xMin').addEventListener('input', updatePlot);
-            document.getElementById('xMax').addEventListener('input', updatePlot);
-            document.getElementById('nTerms').addEventListener('input', function() {
-                document.getElementById('nValue').textContent = this.value;
-                updatePlot();
+            // Configurar eventos
+            simpleFunctionBtn.addEventListener('click', () => toggleFunctionType('simple'));
+            piecewiseFunctionBtn.addEventListener('click', () => toggleFunctionType('piecewise'));
+            
+            nTermsInput.addEventListener('input', function() {
+                nValueDisplay.textContent = this.value;
             });
-            document.getElementById('funcColor').addEventListener('input', function() {
-                functionColor = this.value;
-                updatePlot();
-            });
-            document.getElementById('taylorColor').addEventListener('input', function() {
-                taylorColor = this.value;
-                updatePlot();
-            });
-            document.getElementById('exportBtn').addEventListener('click', exportPlot);
-
-            // Inicializar el gráfico
-            initializePlot();
-            updatePlot();
-        });
-
-        // Inicializar gráfico Plotly
-        function initializePlot() {
-            const layout = {
-                title: 'Función y su aproximación de Taylor',
-                xaxis: {
-                    title: 'x',
-                    showgrid: true,
-                    zeroline: true
-                },
-                yaxis: {
-                    title: 'f(x)',
-                    showgrid: true,
-                    zeroline: true
-                },
-                showlegend: true,
-                hovermode: 'closest',
-                margin: {
-                    l: 50,
-                    r: 30,
-                    b: 40,
-                    t: 40,
-                    pad: 4
+            
+            seriesTermsInput.addEventListener('input', function() {
+                sliderValueDisplay.textContent = this.value;
+                if (fourierSeries) {
+                    updateChart(parseInt(this.value));
                 }
-            };
-
-            const config = {
-                responsive: true,
-                scrollZoom: true,
-                displayModeBar: true,
-                modeBarButtonsToAdd: [
-                    'drawline',
-                    'drawopenpath',
-                    'drawclosedpath',
-                    'drawcircle',
-                    'drawrect',
-                    'eraseshape'
-                ],
-                modeBarButtonsToRemove: ['lasso2d', 'select2d']
-            };
-
-            plot = Plotly.newPlot('plot', [], layout, config);
-        }
-
-        // Evaluar una función matemática
-        function evaluateFunction(fn, x) {
-            try {
-                // Reemplazar operadores matemáticos para evaluación segura
-                const safeFn = fn
-                    .replace(/sin\(/g, 'Math.sin(')
-                    .replace(/cos\(/g, 'Math.cos(')
-                    .replace(/tan\(/g, 'Math.tan(')
-                    .replace(/exp\(/g, 'Math.exp(')
-                    .replace(/log\(/g, 'Math.log(')
-                    .replace(/sqrt\(/g, 'Math.sqrt(')
-                    .replace(/\^/g, '**');
-                
-                // Evaluar la función con el valor x
-                return eval(safeFn);
-            } catch (error) {
-                console.error("Error al evaluar la función:", error);
-                return NaN;
-            }
-        }
-
-        // Calcular la derivada n-ésima de una función en un punto
-        function derivative(fn, x, n) {
-            const h = 1e-5; // Pequeño incremento para derivación numérica
+            });
             
-            if (n === 0) {
-                return evaluateFunction(fn, x);
+            calculateBtn.addEventListener('click', calculateFourierSeries);
+            
+            addPartBtn.addEventListener('click', addFunctionPart);
+            
+            // Delegación de eventos para botones de eliminar
+            functionPartsContainer.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-part')) {
+                    if (functionPartsContainer.children.length > 1) {
+                        e.target.closest('.function-part').remove();
+                    }
+                }
+            });
+            
+            // Inicializar gráfico
+            initChart();
+        });
+        
+        // Cambiar entre función simple y por partes
+        function toggleFunctionType(type) {
+            if (type === 'simple') {
+                simpleFunctionBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                simpleFunctionBtn.classList.add('bg-primary', 'text-white');
+                piecewiseFunctionBtn.classList.remove('bg-primary', 'text-white');
+                piecewiseFunctionBtn.classList.add('bg-gray-200', 'text-gray-700');
+                simpleFunctionContainer.classList.remove('hidden');
+                piecewiseFunctionContainer.classList.add('hidden');
             } else {
-                // Usar diferencia central para mayor precisión
-                return (derivative(fn, x + h/2, n-1) - derivative(fn, x - h/2, n-1)) / h;
+                piecewiseFunctionBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                piecewiseFunctionBtn.classList.add('bg-primary', 'text-white');
+                simpleFunctionBtn.classList.remove('bg-primary', 'text-white');
+                simpleFunctionBtn.classList.add('bg-gray-200', 'text-gray-700');
+                piecewiseFunctionContainer.classList.remove('hidden');
+                simpleFunctionContainer.classList.add('hidden');
             }
         }
-
-        // Calcular los coeficientes de la serie de Taylor
-        function calculateTaylorCoefficients(fn, a = 0, nTerms) {
-            const coefficients = [];
+        
+        // Añadir nuevo intervalo para función por partes
+        function addFunctionPart() {
+            const newPart = document.createElement('div');
+            newPart.className = 'function-part bg-gray-50 p-4 rounded-lg border border-gray-200';
+            newPart.innerHTML = `
+                <div class="grid grid-cols-3 gap-4 mb-2">
+                    <div>
+                        <label class="block text-gray-700 text-sm mb-1">Desde</label>
+                        <input type="number" value="${functionPartsContainer.children.length}" class="w-full px-2 py-1 border border-gray-300 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm mb-1">Hasta</label>
+                        <input type="number" value="${functionPartsContainer.children.length + 1}" class="w-full px-2 py-1 border border-gray-300 rounded">
+                    </div>
+                    <div class="flex items-end">
+                        <button class="remove-part px-2 py-1 bg-red-500 text-white rounded text-sm">Eliminar</button>
+                    </div>
+                </div>
+                <input type="text" value="0" class="w-full px-2 py-1 border border-gray-300 rounded" placeholder="Función para este intervalo">
+            `;
+            functionPartsContainer.appendChild(newPart);
+        }
+        
+        // Inicializar gráfico
+        function initChart() {
+            const ctx = document.getElementById('function-chart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Función original',
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false
+                        },
+                        {
+                            label: 'Aproximación de Fourier',
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 't'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'f(t)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Calcular la serie de Fourier
+        function calculateFourierSeries() {
+            // Obtener parámetros
+            period = parseFloat(periodInput.value);
+            const n = parseInt(nTermsInput.value);
             
-            for (let n = 0; n <= nTerms; n++) {
-                const derivativeAtA = derivative(fn, a, n);
-                coefficients.push(derivativeAtA / factorial(n));
+            // Determinar el tipo de función
+            let functionType = simpleFunctionContainer.classList.contains('hidden') ? 'piecewise' : 'simple';
+            
+            try {
+                // Construir la función a partir de la entrada del usuario
+                if (functionType === 'simple') {
+                    const funcExpr = document.getElementById('function-input').value;
+                    originalFunction = t => {
+                        const scope = { t };
+                        return math.evaluate(funcExpr, scope);
+                    };
+                } else {
+                    // Construir función por partes
+                    const parts = [];
+                    const partElements = functionPartsContainer.querySelectorAll('.function-part');
+                    
+                    partElements.forEach(partEl => {
+                        const inputs = partEl.querySelectorAll('input');
+                        const from = parseFloat(inputs[0].value);
+                        const to = parseFloat(inputs[1].value);
+                        const expr = inputs[2].value;
+                        
+                        parts.push({
+                            from,
+                            to,
+                            func: t => {
+                                const scope = { t };
+                                return math.evaluate(expr, scope);
+                            }
+                        });
+                    });
+                    
+                    originalFunction = t => {
+                        // Ajustar t al período
+                        const adjustedT = t % period;
+                        
+                        // Encontrar el intervalo correspondiente
+                        for (const part of parts) {
+                            if (adjustedT >= part.from && adjustedT <= part.to) {
+                                return part.func(adjustedT);
+                            }
+                        }
+                        
+                        return 0; // Valor por defecto si no está en ningún intervalo
+                    };
+                }
+                
+                // Calcular coeficientes
+                const coefficients = calculateCoefficients(originalFunction, period, n);
+                
+                // Construir la serie de Fourier
+                fourierSeries = t => {
+                    let result = coefficients.a0 / 2;
+                    
+                    for (let i = 1; i <= n; i++) {
+                        result += coefficients.an[i] * math.cos(i * 2 * math.PI * t / period);
+                        result += coefficients.bn[i] * math.sin(i * 2 * math.PI * t / period);
+                    }
+                    
+                    return result;
+                };
+                
+                // Mostrar resultados
+                displayResults(coefficients, n);
+                
+                // Actualizar gráfico
+                updateChart(n);
+                
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        // Calcular coeficientes de Fourier
+        function calculateCoefficients(func, period, n) {
+            // Número de puntos para la integración numérica
+            const integrationPoints = 1000;
+            const coefficients = {
+                a0: 0,
+                an: {},
+                bn: {}
+            };
+            
+            // Calcular a0
+            let sum = 0;
+            for (let i = 0; i < integrationPoints; i++) {
+                const t = i * period / integrationPoints;
+                sum += func(t);
+            }
+            coefficients.a0 = 2 * sum / integrationPoints;
+            
+            // Calcular an y bn
+            for (let k = 1; k <= n; k++) {
+                let sumAn = 0;
+                let sumBn = 0;
+                const omega = 2 * math.PI * k / period;
+                
+                for (let i = 0; i < integrationPoints; i++) {
+                    const t = i * period / integrationPoints;
+                    const funcValue = func(t);
+                    
+                    sumAn += funcValue * math.cos(omega * t);
+                    sumBn += funcValue * math.sin(omega * t);
+                }
+                
+                coefficients.an[k] = 2 * sumAn / integrationPoints;
+                coefficients.bn[k] = 2 * sumBn / integrationPoints;
             }
             
             return coefficients;
         }
-
-        // Calcular el factorial de un número
-        function factorial(n) {
-            if (n === 0 || n === 1) return 1;
-            let result = 1;
-            for (let i = 2; i <= n; i++) {
-                result *= i;
+        
+        // Mostrar resultados
+        function displayResults(coefficients, n) {
+            // Mostrar coeficientes
+            let outputText = `a0 = ${coefficients.a0.toFixed(4)}\n`;
+            
+            for (let i = 1; i <= n; i++) {
+                outputText += `a${i} = ${coefficients.an[i].toFixed(4)}, b${i} = ${coefficients.bn[i].toFixed(4)}\n`;
             }
-            return result;
+            
+            coefficientsOutput.textContent = outputText;
+            
+            // Mostrar serie de Fourier
+            let seriesText = `f(t) ≈ ${(coefficients.a0 / 2).toFixed(4)} `;
+            
+            for (let i = 1; i <= n; i++) {
+                const an = coefficients.an[i];
+                const bn = coefficients.bn[i];
+                
+                if (Math.abs(an) > 1e-4) {
+                    const sign = an >= 0 ? '+' : '-';
+                    seriesText += `${sign} ${Math.abs(an).toFixed(4)} cos(${i}ωt) `;
+                }
+                
+                if (Math.abs(bn) > 1e-4) {
+                    const sign = bn >= 0 ? '+' : '-';
+                    seriesText += `${sign} ${Math.abs(bn).toFixed(4)} sin(${i}ωt) `;
+                }
+            }
+            
+            fourierSeriesDisplay.textContent = seriesText;
+            
+            // Mostrar contenedor de resultados
+            resultsContainer.classList.remove('hidden');
         }
-
-        // Evaluar la serie de Taylor en un punto x
-        function evaluateTaylor(coefficients, x, a = 0) {
-            let result = 0;
+        
+        // Actualizar gráfico
+        function updateChart(n) {
+            if (!originalFunction || !fourierSeries) return;
             
-            for (let n = 0; n < coefficients.length; n++) {
-                result += coefficients[n] * Math.pow(x - a, n);
-            }
+            // Generar datos
+            const points = 200;
+            const originalData = [];
+            const fourierData = [];
             
-            return result;
-        }
-
-        // Generar expresión LaTeX para la serie de Taylor
-        function generateTaylorExpression(coefficients, nTerms) {
-            if (nTerms === 0) {
-                return "P(x) = 0";
-            }
+            const start = 0;
+            const end = 2 * period; // Mostrar dos períodos
             
-            let expression = "P(x) = ";
-            const a = 0; // Centro de la serie (puede hacerse configurable en el futuro)
-            
-            for (let n = 0; n < coefficients.length; n++) {
-                const coeff = coefficients[n];
+            for (let i = 0; i < points; i++) {
+                const t = start + (end - start) * i / points;
                 
-                if (Math.abs(coeff) < 1e-10) continue; // Omitir términos muy pequeños
-                
-                if (n > 0 && coeff >= 0) {
-                    expression += " + ";
-                } else if (coeff < 0) {
-                    expression += " - ";
-                }
-                
-                const absCoeff = Math.abs(coeff);
-                let term = "";
-                
-                if (absCoeff !== 1 || n === 0) {
-                    term += absCoeff.toFixed(4);
-                }
-                
-                if (n > 0) {
-                    if (term !== "") term += "\\cdot ";
-                    term += `(x - ${a})`;
-                    if (n > 1) term += `^${n}`;
-                }
-                
-                expression += term;
+                originalData.push({ x: t, y: originalFunction(t) });
+                fourierData.push({ x: t, y: fourierSeries(t) });
             }
             
-            return expression;
-        }
-
-        // Actualizar el gráfico
-        function updatePlot() {
-            const functionInput = document.getElementById('functionInput').value;
-            const xMin = parseFloat(document.getElementById('xMin').value);
-            const xMax = parseFloat(document.getElementById('xMax').value);
-            const nTerms = parseInt(document.getElementById('nTerms').value);
-            
-            // Validar entradas
-            if (xMin >= xMax) {
-                alert("El valor mínimo de x debe ser menor que el máximo");
-                return;
-            }
-            
-            // Generar datos para la función original
-            const xValues = [];
-            const yValuesOriginal = [];
-            const step = (xMax - xMin) / 200;
-            
-            for (let x = xMin; x <= xMax; x += step) {
-                xValues.push(x);
-                yValuesOriginal.push(evaluateFunction(functionInput, x));
-            }
-            
-            // Calcular coeficientes de Taylor
-            const coefficients = calculateTaylorCoefficients(functionInput, 0, nTerms);
-            
-            // Generar datos para la aproximación de Taylor
-            const yValuesTaylor = [];
-            for (let x = xMin; x <= xMax; x += step) {
-                yValuesTaylor.push(evaluateTaylor(coefficients, x));
-            }
-            
-            // Actualizar la expresión de Taylor
-            const taylorExpr = generateTaylorExpression(coefficients, nTerms);
-            document.getElementById('taylorExpression').innerHTML = 
-                `\\[${taylorExpr}\\]`;
-            
-            // Renderizar MathJax
-            if (typeof MathJax !== 'undefined') {
-                MathJax.typeset();
-            }
-            
-            // Actualizar el gráfico
-            const traceOriginal = {
-                x: xValues,
-                y: yValuesOriginal,
-                mode: 'lines',
-                name: 'Función original',
-                line: {
-                    color: functionColor,
-                    width: 2
-                }
-            };
-            
-            const traceTaylor = {
-                x: xValues,
-                y: yValuesTaylor,
-                mode: 'lines',
-                name: `Aproximación (n=${nTerms})`,
-                line: {
-                    color: taylorColor,
-                    width: 2,
-                    dash: nTerms > 0 ? 'solid' : 'dash'
-                }
-            };
-            
-            const data = [traceOriginal, traceTaylor];
-            
-            Plotly.react('plot', data, plot.layout, plot.config);
-        }
-
-        // Exportar el gráfico como imagen
-        function exportPlot() {
-            Plotly.downloadImage('plot', {
-                format: 'png',
-                width: 800,
-                height: 600,
-                filename: 'serie_taylor'
-            });
+            // Actualizar gráfico
+            chart.data.datasets[0].data = originalData;
+            chart.data.datasets[1].data = fourierData;
+            chart.update();
         }
     </script>
 </body>
