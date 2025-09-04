@@ -1,0 +1,168 @@
+/* =========================
+   Campos de entrada
+========================= */
+.input-field {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+.input-field:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99,102,241,0.3);
+}
+
+/* =========================
+   Botones
+========================= */
+.btn-primary {
+    padding: 0.5rem 1rem;
+    background-color: #6366f1;
+    color: white;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+.btn-primary:hover {
+    background-color: #8b5cf6;
+}
+
+.btn-secondary {
+    padding: 0.5rem 1rem;
+    background-color: #e5e7eb;
+    color: #374151;
+    border-radius: 0.5rem;
+    transition: 0.3s;
+}
+.btn-secondary:hover {
+    background-color: #d1d5db;
+}
+
+.btn-calculate {
+    width: 100%;
+    background-color: #6366f1;
+    color: white;
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+.btn-calculate:hover {
+    background-color: #570080;
+    box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+}
+
+/* Añadir intervalo */
+.btn-add-part {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #e5e7eb;
+    color: #374151;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+}
+.btn-add-part:hover {
+    background-color: #d1d5db;
+}
+
+/* =========================
+   Partes de función
+========================= */
+.function-part {
+    transition: all 0.3s ease;
+    background-color: #f9fafb;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+}
+.function-part:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* =========================
+   Recuadro de resultados
+========================= */
+#results {
+    margin-top: 1.5rem;
+}
+
+#coefficients-output {
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    font-family: monospace;
+    font-size: 0.875rem;
+    max-height: 200px;
+    overflow-x: auto;
+    overflow-y: auto;
+    white-space: pre;
+}
+
+#fourier-series {
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    font-size: 0.875rem;
+    font-family: monospace;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+/* =========================
+   Gráfica
+========================= */
+#function-chart {
+    border-radius: 0.5rem;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* =========================
+   Sliders
+========================= */
+input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 0.5rem;
+    background: #d1d5db;
+    border-radius: 0.25rem;
+    outline: none;
+    transition: background 0.3s;
+}
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    background: #6366f1;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+input[type=range]::-webkit-slider-thumb:hover {
+    background: #8b5cf6;
+}
+
+/* =========================
+   Estilos generales de scroll
+========================= */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: #6366f1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #8b5cf6;
+}

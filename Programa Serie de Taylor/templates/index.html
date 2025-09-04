@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Series de Fourier</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6396f1',
+                        secondary: '#8b5cf6',
+                        dark: '#1f2937',
+                        light: '#f9fafb'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Math.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="/Programa Serie de Taylor/style/style.css">
+</head>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Series de Fourier</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6396f1',
+                        secondary: '#8b5cf6',
+                        dark: '#1f2937',
+                        light: '#f9fafb'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Math.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+
+    <!-- Estilos personalizados -->
+    <style>
+    /* Campos de entrada */
+    .input-field {
+        padding: 0.5rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        outline: none;
+        transition: all 0.3s ease;
+    }
+    .input-field:focus {
+        ring: 2px solid #6366f1;
+        border-color: transparent;
+    }
+
+    /* Botones */
+    .btn-primary {
+        padding: 0.5rem 1rem;
+        background-color: #6366f1;
+        color: white;
+        border-radius: 0.5rem;
+        transition: 0.3s;
+    }
+    .btn-primary:hover {
+        background-color: #8b5cf6;
+    }
+
+    .btn-secondary {
+        padding: 0.5rem 1rem;
+        background-color: #e5e7eb;
+        color: #374151;
+        border-radius: 0.5rem;
+        transition: 0.3s;
+    }
+    .btn-secondary:hover {
+        background-color: #d1d5db;
+    }
+
+    .btn-calculate {
+        width: 100%;
+        background-color: #6366f1;
+        color: white;
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .btn-calculate:hover {
+        background-color: #570080;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+    }
+
+    /* Añadir intervalo */
+    .btn-add-part {
+        margin-top: 0.5rem;
+        padding: 0.5rem 1rem;
+        background-color: #e5e7eb;
+        color: #374151;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+    }
+    .btn-add-part:hover {
+        background-color: #d1d5db;
+    }
+
+    /* Partes de función */
+    .function-part {
+        transition: all 0.3s ease;
+    }
+    .function-part:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Recuadro de resultados */
+    #results {
+        display: none; /* Se muestra al calcular */
+    }
+
+    #results h3, #results h4 {
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .results-box {
+        background: linear-gradient(135deg, #f9fafb, #e0e7ff);
+        padding: 1rem;
+        border-radius: 1rem;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        overflow-x: auto;
+        margin-top: 0.5rem;
+        font-family: 'Fira Code', monospace;
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+
+    .coefficients-title {
+        color: #4f46e5; /* morado oscuro */
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .series-title {
+        color: #2563eb; /* azul */
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Estilo de integrales */
+    .coefficient-integral {
+        background: rgba(255,255,255,0.7);
+        border-left: 4px solid #8b5cf6;
+        padding: 0.5rem 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.5rem;
+    }
+
+    .series-expression {
+        background: rgba(255,255,255,0.7);
+        border-left: 4px solid #2563eb;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+    }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-dark mb-2">Visualizador de Series de Fourier</h1>
+            <p class="text-lg text-gray-600">Calcula y visualiza la aproximación de funciones periódicas mediante series trigonométricas de Fourier</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Panel de configuración -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-dark mb-6">Configuración de la función</h2>
+                
+                <!-- Período -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2">Período (T)</label>
+                    <input type="number" id="period" value="2" min="0.1" step="0.1" class="w-full input-field">
+                </div>
+                
+                <!-- Selector de tipo de función -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Tipo de función</label>
+                    <div class="flex space-x-4">
+                        <button id="simple-function-btn" class="btn-primary">Función simple</button>
+                        <button id="piecewise-function-btn" class="btn-secondary">Función por partes</button>
+                    </div>
+                </div>
+                
+                <!-- Función simple -->
+                <div id="simple-function-container" class="mb-6">
+                    <label class="block text-gray-700 mb-2">Función f(t)</label>
+                    <input type="text" id="function-input" value="t^2" class="w-full input-field" placeholder="Ej: sin(t), t^2, exp(t)">
+                    <p class="text-sm text-gray-500 mt-1">Usa 't' como variable. Soporta funciones matemáticas comunes: sin, cos, exp, etc.</p>
+                </div>
+                
+                <!-- Función por partes -->
+                <div id="piecewise-function-container" class="hidden mb-6">
+                    <label class="block text-gray-700 mb-2">Definir función por partes</label>
+                    <div id="function-parts" class="space-y-4">
+                        <!-- Intervalos dinámicos -->
+                    </div>
+                    <button id="add-part" class="btn-add-part">+ Añadir intervalo</button>
+                </div>
+                
+                <!-- Número de coeficientes -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2">Número de términos (N)</label>
+                    <input type="range" id="n-terms" min="1" max="50" value="10" class="w-full">
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>1</span>
+                        <span id="n-value">10</span>
+                        <span>50</span>
+                    </div>
+                </div>
+                
+                <!-- Botón de calcular -->
+                <button id="calculate-btn" class="btn-calculate">Calcular Serie de Fourier</button>
+                
+                <!-- Resultados -->
+                <div id="results" class="mt-8">
+                    <h3 class="text-xl font-semibold coefficients-title">Coeficientes calculados</h3>
+                    <div class="results-box">
+                        <div id="coefficients-output" class="coefficient-integral"></div>
+                    </div>
+
+                    <h4 class="text-lg font-medium series-title mt-4">Serie de Fourier</h4>
+                    <div class="results-box">
+                        <div id="fourier-series" class="series-expression"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel de visualización -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-dark mb-6">Visualización</h2>
+                <div class="h-80">
+                    <canvas id="function-chart"></canvas>
+                </div>
+                <div class="mt-6 flex justify-center">
+                    <div class="w-3/4">
+                        <label class="block text-gray-700 mb-2 text-center">Términos de la serie: <span id="slider-value">10</span></label>
+                        <input type="range" id="series-terms" min="1" max="50" value="10" class="w-full">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script principal -->
+    <script src="/Programa Serie de Taylor/components/script.js"></script>
+</body>
+</html>

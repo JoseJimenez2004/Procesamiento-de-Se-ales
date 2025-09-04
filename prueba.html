@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Graficador de Funciones</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h2>Graficador de Funciones</h2>
+
+    <label for="funcInput">Ingresa la función F(ω) en JavaScript:</label><br>
+    <input type="text" id="funcInput" style="width: 60%;" value="4*Math.sin(2*w)/w">
+    <button onclick="graficar()">Graficar</button>
+
+    <div id="plot" style="width: 90%; height: 500px; margin-top:20px;"></div>
+
+    <script>
+        function graficar() {
+            const input = document.getElementById('funcInput').value;
+
+            const omega = [];
+            const F = [];
+            const N = 1000;
+            const omegaMin = -10;
+            const omegaMax = 10;
+            const delta = (omegaMax - omegaMin) / (N-1);
+
+            for(let i = 0; i < N; i++) {
+                let w = omegaMin + i * delta;
+                omega.push(w);
+
+                try {
+                    let y;
+                    // Evitar división por cero para la función original
+                    if(w === 0 && input.includes("/w")) {
+                        y = 8; // límite aproximado
+                    } else {
+                        y = eval(input); // evaluar función
+                    }
+                    F.push(y);
+                } catch(e) {
+                    F.push(NaN); // Si hay error, poner NaN
+                }
+            }
+
+            const trace = {
+                x: omega,
+                y: F,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'F(ω)'
+            };
+
+            const layout = {
+                title: 'Graficador de Funciones',
+                xaxis: { title: 'ω' },
+                yaxis: { title: 'F(ω)' }
+            };
+
+            Plotly.newPlot('plot', [trace], layout);
+        }
+
+        // Graficar la función inicial al cargar
+        graficar();
+    </script>
+</body>
+</html>
