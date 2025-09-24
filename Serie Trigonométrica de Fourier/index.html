@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serie Trigonométrica de Fourier</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Serie Trigonométrica de Fourier</h1>
+    
+
+    <div class="container">
+        <div class="controls">
+            <h2>Configuración</h2>
+            
+            <div class="control-group">
+                <label for="signal-select">Selecciona una señal:</label>
+                <select id="signal-select">
+                    <option value="square">Onda Cuadrada</option>
+                    <option value="sawtooth">Onda Diente de Sierra</option>
+                    <option value="triangle">Onda Triangular</option>
+                    <option value="custom">Introducir coeficientes personalizados</option>
+                </select>
+            </div>
+
+            <div id="custom-coefficients" class="control-group" style="display: none;">
+                <h3>Coeficientes Personalizados</h3>
+                <label for="a0-input">Término constante (a₀):</label>
+                <input type="number" id="a0-input" value="0" step="0.1">
+                
+                <label for="an-input">Coeficientes aₙ (separados por comas):</label>
+                <input type="text" id="an-input" placeholder="Ej: 0, 0, 0.5, 0">
+                
+                <label for="bn-input">Coeficientes bₙ (separados por comas):</label>
+                <input type="text" id="bn-input" placeholder="Ej: 1.27, 0, 0.42, 0">
+            </div>
+
+            <div class="control-group">
+                <label for="n-input">Número de términos de la serie (n):</label>
+                <input type="number" id="n-input" value="5" min="1" max="50">
+            </div>
+
+            <div class="control-group">
+                <label for="period-input">Período de la señal (T):</label>
+                <input type="number" id="period-input" value="6.28" step="0.1" min="0.1">
+            </div>
+
+            <button id="calculate-btn" onclick="updateGraphs()">Calcular y Graficar</button>
+        </div>
+
+        <div class="graphs">
+            <div class="graph-container">
+                <h3>Señal Original</h3>
+                <canvas id="original-chart"></canvas>
+            </div>
+            <div class="graph-container">
+                <h3>Aproximación de Fourier</h3>
+                <canvas id="fourier-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
